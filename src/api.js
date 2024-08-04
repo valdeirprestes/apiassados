@@ -9,6 +9,8 @@ import "./database";
 import jsonerrorsmiddleware from "./middlewares/jsonerrorsMiddleware";
 import verifydbmiddleware from "./middlewares/verifydbMiddleware";
 import {resolve} from "path";
+import cors from "cors";
+import urlConfig from "./config/urlConfig";
 class App
 {
     constructor()
@@ -18,6 +20,23 @@ class App
         this.routers();
     }
     middlewares(){
+        const whitelist = [
+            `${urlConfig.url}`,
+            `${urlConfig.url_frontend}`
+        ];
+        const corsOptions = {
+            origin:(origin, callback) =>{
+                if(whitelist.indexOf(origin)!==-1 || !origin){
+                    callback(null, true);
+                }
+                else
+                {
+                    callback(new Error('Not allowed by CORS'));
+                }
+            }
+        };
+		 //this.app.use("*",cors(corsOptions));
+        this.app.use(cors(corsOptions));
         this.app.use(express.urlencoded({extended:true}));
         this.app.use(express.json());
 

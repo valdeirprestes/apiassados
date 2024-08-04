@@ -166,7 +166,8 @@ export default class UserModel extends Sequelize.Model
                 */
                validate:{
                 testedata (value){
-                    const reg_data = /^\d{4}-(([1|2|3]\d)|(0\d))-((0[1-9])|[1|2|3]\d)$/;
+                    try {
+                        const reg_data = /^\d{4}-(([1|2|3]\d)|(0\d))-((0[1-9])|[1|2|3]\d)$/;
                     let tmp = new Date(value);
                     let data = `${value}`;
                     let testedata = tmp.toISOString().split('T')[0];
@@ -176,6 +177,9 @@ export default class UserModel extends Sequelize.Model
                         throw new Error("O campo data_nascimento deve ser uma string no formato YYYY-MM-DD");
                     if(data != testedata)
                         throw new Error("O campo data_nascimento esta com uma data inválida")
+                    } catch (e) {
+                        throw new Error("O campo data_nascimento deve ser uma string no formato YYYY-MM-DD");
+                    }
                 },
                }
             },
