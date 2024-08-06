@@ -41,6 +41,12 @@ module.exports = {
     status_pagamento:{
       type:Sequelize.STRING
     },
+    mododeentrega:{
+      type:Sequelize.STRING
+    },
+    edicao:{
+      type:Sequelize.INTEGER
+    },
     datamovimento:{
       type: Sequelize.DATE
     },

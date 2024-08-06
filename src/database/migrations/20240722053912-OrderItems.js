@@ -39,6 +39,9 @@ module.exports = {
         type:Sequelize.DECIMAL(10,2),
         allowNull:false
       },
+      edicao:{
+        type:Sequelize.INTEGER
+      },
       estado:{
         type:Sequelize.STRING,
         allowNull:false

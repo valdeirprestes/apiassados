@@ -17,7 +17,7 @@ class UserController
         } catch (e) 
         {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async update(req, res){
@@ -25,14 +25,14 @@ class UserController
             const id = req.params.id;
             const user = await UserModel.findByPk(id);
             if(!user){
-                return res.status(400).json(`Não existem usuário com id ${id}`);
+                return res.status(400).json({"errors":[`Não existem usuário com id ${id}`]});
             }
             const userupdate = await user.update(req.body, {attributes: {exclude: ['senha_criptografada']}});
             const user2 = await UserModel.findByPk(userupdate.id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(201).json(user2);  
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async getuser(req, res){
@@ -67,7 +67,7 @@ class UserController
             
         } catch (e)
         {
-            return res.status(400).json(null);
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
   
     }

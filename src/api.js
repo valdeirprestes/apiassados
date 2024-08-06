@@ -25,6 +25,7 @@ class App
             `${urlConfig.url_frontend}`
         ];
         const corsOptions = {
+			   methods:"GET, POST, PUT, DELETE",
             origin:(origin, callback) =>{
                 if(whitelist.indexOf(origin)!==-1 || !origin){
                     callback(null, true);
@@ -35,7 +36,15 @@ class App
                 }
             }
         };
+		 const corsOptions2 = {
+			  "origin": "*",
+			  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+			  "preflightContinue": false,
+			  "optionsSuccessStatus": 204
+		};
 		 //this.app.use("*",cors(corsOptions));
+        //this.app.use(cors());
+
         this.app.use(cors(corsOptions));
         this.app.use(express.urlencoded({extended:true}));
         this.app.use(express.json());
@@ -57,7 +66,9 @@ class App
         this.app.use("/token",tokenrouter);
         this.app.use("/estoque",stockrouter);
         this.app.use("/pedido",orderroute);
-        this.app.get('*', (req,res, next) =>{ res.status(404).json(["404 route not found"]);})
+        this.app.get('*', (req,res, next) =>{ 
+			  res.status(404).json({"errors":["404 route not found"]});
+		  })
     }
 }
 

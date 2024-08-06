@@ -15,7 +15,7 @@ class MovementController
             return res.status(201).json(movement);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
 
     }
@@ -43,7 +43,7 @@ class MovementController
             
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
 
     }
@@ -60,7 +60,7 @@ class MovementController
             return res.status(200).json(movement);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async close(req, res){
@@ -68,9 +68,9 @@ class MovementController
             const {idmov, idusuario} = req.body;
             let movement = await MovementModel.findByPk(idmov);
             if(!movement)
-                return res.status(400).json(`Movimento id ${idmov} é invalido`);
+                return res.status(400).json({"errors":[`Movimento id ${idmov} é invalido`]});
             if(movement.operacao == "FECHADO")
-                return res.status(400).json(`Movimento id ${idmov} já esta fechado`);
+                return res.status(400).json({"errors":[`Movimento id ${idmov} já esta fechado`]});
             await CloseMovementModel.update({estado:"CANCELADO"},{where: {idmov:idmov}});
             const closemovement = await CloseMovementModel.create({idmov, idusuario});
             const updatemov = await movement.update({operacao:"FECHADO"});
@@ -85,7 +85,7 @@ class MovementController
 
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));            
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async reopen(req, res){
@@ -93,9 +93,9 @@ class MovementController
             const {idmov, idusuario} = req.body;
             let movement = await MovementModel.findByPk(idmov);
             if(!movement)
-                return res.status(400).json(`Movimento id ${idmov} é invalido`);
+                return res.status(400).json({"errors":[`Movimento id ${idmov} é invalido`]});
             if(movement.operacao == "ABERTO")
-                return res.status(400).json(`Movimento id ${idmov} já esta aberto`);
+                return res.status(400).json({"errors":[`Movimento id ${idmov} já esta aberto`]});
             await CloseMovementModel.update({"estado":"CANCELADO"},{where: {idmov:idmov}});
             const updatemov = await movement.update({operacao:"ABERTO"});
             movement = await MovementModel.findByPk(idmov, {
@@ -109,7 +109,7 @@ class MovementController
             
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));            
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});            
         }
         
     }

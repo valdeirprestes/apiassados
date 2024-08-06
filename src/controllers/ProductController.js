@@ -18,7 +18,7 @@ class ProductController
         } catch (e) 
         {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
 
     }
@@ -37,7 +37,7 @@ class ProductController
             return res.status(200).json(lstproducts);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(null);
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async update(req, res)
@@ -46,12 +46,12 @@ class ProductController
             const id = req.params.id;
             const product =await ProductModel.findByPk(id);
             if(!product)
-                return res.status(400).json(`Não existe produto com o ${id}`);
+                return res.status(400).json({"errors":[`Não existe produto com o ${id}`]});
             const updatedproduct = await product.update(req.body);
             return res.status(200).json(updatedproduct);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async get(req, res)
@@ -60,11 +60,11 @@ class ProductController
             const id = req.params.id;
             const product =await ProductModel.findByPk(id);
             if(!product)
-                return res.status(400).json(`Não existe produto com o ${id}`);
+                return res.status(400).json({"errors":[`Não existe produto com o ${id}`]});
             return res.status(200).json(product);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     imgupload(req,res){
@@ -76,12 +76,12 @@ class ProductController
             try {
                 const product = await ProductModel.findByPk(req.params.id);
                 if(!product)
-                    return res.status(400).json(`Não existe produto com id ${req.params.id}`);
+                    return res.status(400).json({"errors":[`Não existe produto com id ${req.params.id}`]});
                 const img ="images/"+req.file.filename;
                 const updateproduct = await product.update({foto:img});
                 return res.status(201).json(updateproduct);
             } catch (e) {
-                return res.status(400).json(e.errors.map(err => err.message));
+                return res.status(400).json({"errors":e.errors.map(err => err.message)});
             }
         });
     }

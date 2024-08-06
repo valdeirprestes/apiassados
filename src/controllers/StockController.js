@@ -10,13 +10,13 @@ class StockController{
                 operacao= "ESTOCAR";
             let natureza ="D";
             if(!entrada || entrada <= 0)
-                return res.status(400).json("O campo entrada deve ser preenchido com valor a estocar");
+                return res.status(400).json({"errors":["O campo entrada deve ser preenchido com valor a estocar"]});
             const body = {idusuario, idproduto, descricao, datamovimento, entrada, idusuarioalt, operacao, natureza };
             const stock = await StockModel.create(body)
             return res.status(201).json(stock);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async getall(req, res){
@@ -34,7 +34,7 @@ class StockController{
             return res.status(200).json(lstmovements);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
     async sub(req, res){
@@ -45,13 +45,13 @@ class StockController{
                 operacao= "VENDER";
             let natureza ="C";
             if(!saida || saida <= 0)
-                return res.status(400).json("O campo saida deve ser preenchido com valor a estocar");
+                return res.status(400).json({"errors":["O campo saida deve ser preenchido com valor a estocar"]});
             const body = {idusuario, idproduto, descricao, datamovimento, saida, idusuarioalt, operacao, natureza };
             const stock = await StockModel.create(body)
             return res.status(201).json(stock);
         } catch (e) {
             console.log(e);
-            return res.status(400).json(e.errors.map(err => err.message));
+            return res.status(400).json({"errors":e.errors.map(err => err.message)});
         }
     }
 }

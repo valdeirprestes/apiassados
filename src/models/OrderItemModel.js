@@ -64,6 +64,9 @@ class OrderItemModel extends Model{
             subtotal:{
                 type: DECIMAL(10.2)
             },
+            edicao:{
+                type:DataTypes,
+            },
             estado:{
                 type:DataTypes.STRING,
                 defaultValue:"NORMAL",
@@ -106,7 +109,7 @@ class OrderItemModel extends Model{
     }
     static associate(models){
         this.belongsTo(models.OrderModel, {foreignKey:"idpedido"});
-        this.belongsTo(models.ProductModel, {foreignKey:"idproduto"});
+        this.belongsTo(models.ProductModel, {foreignKey:"idproduto",as:"produto"});
     }
     
 

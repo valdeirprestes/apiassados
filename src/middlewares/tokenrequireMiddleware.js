@@ -4,7 +4,7 @@ export default (req, res, next) =>{
     const {authorization} = req.headers;
     if(!authorization)
         return res.status(400).json(
-            "Usuário não efetuou o login"
+			  {"errors":["Usuário não efetuou o login"]}
     );
     const [text, token] = authorization.split(' ');
     try {
@@ -14,7 +14,7 @@ export default (req, res, next) =>{
         req.params.userEmail = email;
         next();
     } catch (error) {
-        return res.status(400).json("Token expirado ou token inválido");
+        return res.status(400).json({"errors":["Token expirado ou token inválido"]});
     }
 
 }

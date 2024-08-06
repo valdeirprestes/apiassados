@@ -82,6 +82,35 @@ class OrderModel extends Model{
                     }
                 }
             },
+            status_pagamento:{
+                type: DataTypes.STRING,
+                allowNull:false,
+                validate:{
+                    notNull:{
+                        msg:"O campo status_pagamento é obrigatório"
+                    },
+                    isIn:{
+                        args:[["PAGO","PENDENTE"]],
+                        msg:'O campo status_pagamento pode ser apenas PAGO ou PENDENTE'
+                    }
+                }
+            },
+            mododeentrega:{
+                type: DataTypes.STRING,
+                allowNull:false,
+                validate:{
+                    notNull:{
+                        msg:"O campo mododeentrega é obrigatório"
+                    },
+                    isIn:{
+                        args:[["SEMENTREGA","COMENTREGA"]],
+                        msg:'O campo mododeentrega pode ser apenas SEMENTREGA ou COMENTREGA'
+                    }
+                },
+            },
+            edicao:{
+                type:DataTypes,
+            },
             datamovimento:{
                 type: DataTypes.DATE,
                 allowNull:false,
@@ -105,7 +134,7 @@ class OrderModel extends Model{
     }
 
     static associate(models){
-        this.belongsTo(models.UserModel, {foreignKey:"idcliente"});
+        this.belongsTo(models.UserModel, {foreignKey:"idcliente",as:"cliente"});
         this.belongsTo(models.UserModel, {foreignKey:"idusuario"});
         this.belongsTo(models.UserModel, {foreignKey:"idusuarioalt"});
         this.hasMany(models.OrderItemModel, {foreignKey:"idpedido", as:"itens"});
