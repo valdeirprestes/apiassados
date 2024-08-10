@@ -11,18 +11,38 @@ import verifydbmiddleware from "./middlewares/verifydbMiddleware";
 import {resolve} from "path";
 import cors from "cors";
 import urlConfig from "./config/urlConfig";
+import fs from "fs";
 class App
 {
     constructor()
     {
+        this.verifyfolders();
         this.app = express();
         this.middlewares();
         this.routers();
     }
+    verifyfolders(){
+        try{
+            const folder = "./images";
+            console.log("Checando pasta", folder, "...")
+            if(!fs.existsSync(folder))
+            {
+                console.log("Criando a pasta images para os produtos...")
+                fs.mkdirSync(folder);
+                console.log("Pasta images criada")
+            }
+            else
+                console.log("Pasta", folder, "OK!\n\n");
+        }catch(e){
+            console.log(e);
+            console.log("Não conseguiu criar a pasta images, necessária para guarda imagens dos produtos!!")
+        }
+    }
+    
     middlewares(){
         const whitelist = [
             `${urlConfig.url}`,
-            `${urlConfig.url_frontend}`
+            `${urlConfig.url_frontend}`,
         ];
         const corsOptions = {
 			   methods:"GET, POST, PUT, DELETE",
