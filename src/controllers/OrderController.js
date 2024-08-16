@@ -78,6 +78,10 @@ class OrderController{
 			const order = await OrderModel.findByPk(idpedido);
 			if(!order)
 				return res.status(400).json({"errors":[`O pedido ${idpedido} não existe`]});
+			if(order.fase === "CONCLUIDO")
+				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi concluído`]});
+			if(order.estado === "CANCELADO")
+				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi cancelado`]});
 			edicao = order.edicao;
 			const body = {idpedido,edicao, ...rest};
 			const itemorder  = await OrderItemModel.create(body);
@@ -102,11 +106,9 @@ class OrderController{
 		}
 	}
 	async closeorder(req,res){
-
+		const sequelize = await new Sequelize(databaseConfig);
+		const t = await sequelize.transaction();
 		try {
-
-			const sequelize = await new Sequelize(databaseConfig);
-
 			const order = await OrderModel.findByPk(req.params.id,{
 				include:{
 					model:OrderItemModel,
@@ -115,30 +117,54 @@ class OrderController{
 			});
 			if(!order)
 				res.status(400).json({"errors":[`Não foi encontrado o pedido de id ${req.params.id}`]});
-			const t = await sequelize.transaction({
-				isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED
-			});
+			if(order.fase === "CONCLUIDO")
+				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi concluído`]});
+			if(order.estado === "CANCELADO")
+				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi cancelado`]});
 			const updateorder = await order.update({fase:"CONCLUIDO"}, {transaction:t});
 			const  {datamovimento, itens} =  order;
-			itens.forEach(async item => {
-				const obj = {
-					idproduto : item.idproduto,
-					"operacao":"VENDA",
-					"descricao":`Venda  referente ao pedido ${req.params.id}`,
-					"idusuario":req.params.userId,
-					"idusuarioalt":req.params.userId,
-					"saida":item.quantidade,
-					"datamovimento":datamovimento,
-					"natureza":"C"
-				}; 
-				console.log(obj);
-				console.log(`Create stock from product id ${item.idproduto} from order id ${req.params.id}`);
-				const newstock = await StockModel.create(obj, {transaction:t});
-				await newstock.save();
-			});
-			await order.save({transaction:t});
+			const newitens = [];
+			console.log('itens.length', itens.length);
+			console.log('itens', itens);
+			for (let i=0; i < itens.length; i++){
+					const obj = {
+						idproduto : itens[i].idproduto,
+						"operacao":"VENDA",
+						"descricao":`Venda  referente ao pedido ${req.params.id}`,
+						"idusuario":req.params.userId,
+						"idusuarioalt":req.params.userId,
+						"saida":itens[i].quantidade,
+						"datamovimento":datamovimento,
+						"natureza":"C"
+					}; 
+					console.log(obj);
+					console.log(`Create stock from product id ${itens[i].idproduto} from order id ${req.params.id}`);
+					let newstock = await StockModel.create(obj, {transaction:t});
+			}
+			await t.commit();
 			return res.status(201).json(updateorder);
-
+		} catch (e) {
+			await t.rollback();
+			console.log(e);
+			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+		}
+	}
+	async cancel(req, res){
+		try {
+			const order = await OrderModel.findByPk(req.params.id,{
+				include:{
+					model:OrderItemModel,
+					as:"itens"
+				}
+			});
+			if(!order)
+				return res.status(400).json({"errors":[`Não foi encontrado o pedido de id ${req.params.id}`]});
+			if(order.fase === "CONCLUIDO")
+				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi concluído`]});
+			if(order.estado === "CANCELADO")
+				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi cancelado`]});    
+			const update_order = await order.update({"estado":"CANCELADO"});
+			return res.status(200).json(update_order)
 		} catch (e) {
 			console.log(e);
 			return res.status(400).json({"errors":e.errors.map(err => err.message)});

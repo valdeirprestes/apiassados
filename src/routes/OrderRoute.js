@@ -10,5 +10,6 @@ router.post("/todospedidosdetalhados",tokenrequireMiddleware, ordercontroller.ge
 router.post("/inseriritem", tokenrequireMiddleware, ordercontroller.insertitem);
 router.post("/:id/atualizar", tokenrequireMiddleware, ordercontroller.updateitem);
 router.post("/:id/fecharpedido", tokenrequireMiddleware, ordercontroller.closeorder);
+router.post("/:id/cancelar", tokenrequireMiddleware, ordercontroller.cancel);
 
 export default router;
