@@ -51,6 +51,9 @@ class UserController
         try 
         {   
             const lstfiltros = ["nome", "celular", "telefone","perfil","email", "sexo","estado", "ativo" ];
+            const {help} = req.body;
+            if(help)
+                return res.status(200).json({"filtros":lstfiltros, "tipo":"Like SQL"});
             let filtros = {};
             lstfiltros.forEach((namefiltro) => {
                 let newfiltro =lodash.get(req.body, namefiltro,"");

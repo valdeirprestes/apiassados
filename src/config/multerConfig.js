@@ -11,7 +11,7 @@ function randnumber(){
 export default {
     fileFilter: function(req, file, cb)
     {
-        if(file.mimetype != 'image/png' && file.mimetype != 'image/jpg' && file.mimetype != 'image/gif')
+        if(file.mimetype != 'image/png' && file.mimetype != 'image/jpeg' && file.mimetype != 'image/gif')
         {
             return cb( new multer.MulterError('O sistema aceita apenas arquivos PNG, JPG ou GIF'));
         }

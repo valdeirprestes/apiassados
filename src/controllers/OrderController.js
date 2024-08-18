@@ -19,6 +19,27 @@ class OrderController{
 			return res.status(400).json({"errors":e.errors.map(err => err.message)});
 		}
 	}
+
+	async post2(req, res){
+		try {
+			let {edicao, ...resto} = req.body;
+			edicao = 1;
+			
+			let include = {
+				include:[{
+					association: 'OrdemItemModel',
+					as: 'itens'
+				}]
+			};
+			let body = {edicao, ...resto};
+			console.log('body', body);
+			const	order = await OrderModel.create(body);
+			return res.status(201).json(order);
+		} catch (e) {
+			console.log(e);
+			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+		}
+	}
 	async getall(req,res){
 		try {
 			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado"];
