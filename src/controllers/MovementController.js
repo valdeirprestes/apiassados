@@ -1,7 +1,8 @@
 import MovementModel from "../models/MovementModel";
 import CloseMovementModel from "../models/CloseMovementModel";
 import * as lodash from "lodash";
-
+import { Op } from "sequelize";
+import funcPage from "../utils/funcPage";
 class MovementController
 {
     async post(req, res)
@@ -15,7 +16,10 @@ class MovementController
             return res.status(201).json(movement);
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
 
     }
@@ -24,26 +28,55 @@ class MovementController
         try 
         {
             const lstfiltros = ["estado","operacao","data"];
+            const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+                    "filtros":lstfiltros, 
+                    "tipo":"Equal SQL",
+                    "paginador":"'qtdpagina' e 'pagina' "
+                });
+            const {pagina, qtdpagina}= req.body;
+            const paginador = funcPage(qtdpagina,pagina);
             let filtros = {};
+            let {data, ...resto} = req.body;
+            if(data)
+                data = new Date(data);
+            let body = {data, ...resto};
             lstfiltros.forEach((namefiltro) => {
-                let newfiltro =lodash.get(req.body, namefiltro,"");
+                let newfiltro =lodash.get(body, namefiltro,"");
                 if(newfiltro != "")
-                    filtros = {...filtros, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+                    filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
             });
-            const lstmovements = await MovementModel.findAll({
-                where:filtros,
-                include:{
-                    model:CloseMovementModel, 
-                    as:"fechamentos",
-                    attributes:["idmov","idusuario", "estado", "created_at","updated_at"],
-                    
-                }
-            });
+            let lstmovements;
+            if(Object.keys(filtros).length == 0)
+                lstmovements = await MovementModel.findAll({
+                    include:{
+                        model:CloseMovementModel, 
+                        as:"fechamentos",
+                        attributes:["idmov","idusuario", "estado", "created_at","updated_at"],
+                        
+                    },
+                    ...paginador
+                });
+            else
+                lstmovements = await MovementModel.findAll({
+                    include:{
+                        model:CloseMovementModel, 
+                        as:"fechamentos",
+                        attributes:["idmov","idusuario", "estado", "created_at","updated_at"],
+                        
+                    },
+                    where:{[Op.and]:filtros},
+                    ...paginador
+                });
             return res.status(200).json(lstmovements);
             
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
 
     }
@@ -60,7 +93,10 @@ class MovementController
             return res.status(200).json(movement);
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async close(req, res){
@@ -85,7 +121,10 @@ class MovementController
 
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async reopen(req, res){
@@ -109,7 +148,10 @@ class MovementController
             
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});            
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});            
         }
         
     }

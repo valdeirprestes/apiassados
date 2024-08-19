@@ -6,6 +6,8 @@ import {Sequelize, Transaction} from "sequelize";
 import * as lodash from "lodash";
 import StockModel from "../models/StockModel";
 import databaseConfig from "../config/databaseConfig";
+import {Op} from "sequelize";
+import funcPage from "../utils/funcPage";
 class OrderController{
 	async post(req, res){
 		try {
@@ -16,7 +18,10 @@ class OrderController{
 			return res.status(201).json(order);
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 
@@ -37,39 +42,98 @@ class OrderController{
 			return res.status(201).json(order);
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async getall(req,res){
 		try {
-			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado"];
+			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+					"filtros":lstfiltros,
+					 "tipo":"Equal SQL",
+					 "paginador":"'qtdpagina' e 'pagina' "
+				});
+			const {pagina, qtdpagina}= req.body;
+			const paginador = funcPage(qtdpagina,pagina);
 			let filtros = {};
+			let {datamovimento, ...resto} = req.body;
+			if(datamovimento)
+            	datamovimento = new Date(datamovimento);
+            let body = {datamovimento, ...resto};
 			lstfiltros.forEach((namefiltro) => {
-				let newfiltro =lodash.get(req.body, namefiltro,"");
-				if(newfiltro != "")
-					filtros = {...filtros, [namefiltro]:newfiltro};
+				let newfiltro =lodash.get(body, namefiltro,"");
+				if(newfiltro !== "" && newfiltro !== undefined)
+					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
 			});
-			const lstorders = await OrderModel.findAll({
-				include:{ model: OrderItemModel, as:"itens" },
-				where:filtros
-			});
+			let lstorders;
+			if(Object.keys(filtros).length == 0)
+				lstorders = await OrderModel.findAll({include:{ model: OrderItemModel, as:"itens" }, ...paginador});
+			else{
+				lstorders = await OrderModel.findAll({
+					include:{ model: OrderItemModel, as:"itens" },
+					where:{[Op.and]:filtros},
+					...paginador
+				});
+			}
 			return res.status(200).json(lstorders);
 
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json(e.errors.map(err => err.message));
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async getalldetails(req,res){
 		try {
 			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+					"filtros":lstfiltros,
+					 "tipo":"Equal SQL",
+					 "paginador":"'qtdpagina' e 'pagina' "
+				});
+			const {pagina, qtdpagina}= req.body;
+			const paginador = funcPage(qtdpagina,pagina);
 			let filtros = {};
+			let {datamovimento, ...resto} = req.body;
+			if(datamovimento)
+            	datamovimento = new Date(datamovimento);
+            let body = {datamovimento, ...resto};
 			lstfiltros.forEach((namefiltro) => {
-				let newfiltro =lodash.get(req.body, namefiltro,"");
-				if(newfiltro != "")
-					filtros = {...filtros, [namefiltro]:newfiltro};
+				let newfiltro =lodash.get(body, namefiltro,"");
+				if(newfiltro !== "" && newfiltro !== undefined)
+					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
 			});
-			const lstorders = await OrderModel.findAll({
+			let lstorders;
+			if(Object.keys(filtros).length == 0)
+				lstorders = await OrderModel.findAll({
+					include:[
+						{ model: UserModel, 
+							as:"cliente",
+							"attributes":
+							{ 
+								"exclude":["senha_criptografada"]
+							}
+						} ,
+						{ 
+							model: OrderItemModel, as:"itens",
+							include:{
+								model:ProductModel, as:"produto"
+							}
+						}
+					],
+					...paginador
+				});
+			else
+				lstorders = await OrderModel.findAll({
 				include:[
 					{ model: UserModel, 
 						as:"cliente",
@@ -84,13 +148,17 @@ class OrderController{
 							model:ProductModel, as:"produto"
 						}
 					}],
-				where:filtros
+				where:{[Op.and]:filtros},
+				...paginador
 			});
 			return res.status(200).json(lstorders);
 
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async insertitem(req, res){
@@ -109,9 +177,11 @@ class OrderController{
 			return res.status(201).json(itemorder);
 
 		} catch (e) {
-			console.log(e);
-			//return res.status(400).json({});
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			cconsole.log(e);
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async updateitem(req, res){
@@ -123,7 +193,10 @@ class OrderController{
 			return res.status(200).json(update_itemmorder)
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async closeorder(req,res){
@@ -167,7 +240,10 @@ class OrderController{
 		} catch (e) {
 			await t.rollback();
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 	async cancel(req, res){
@@ -188,7 +264,10 @@ class OrderController{
 			return res.status(200).json(update_order)
 		} catch (e) {
 			console.log(e);
-			return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
 		}
 	}
 }

@@ -1,6 +1,7 @@
 import UserModel from "../models/UserModel";
 import * as lodash from "lodash";
 import { Op } from "sequelize";
+import funcPage from "../utils/funcPage";
 
 
 
@@ -17,7 +18,10 @@ class UserController
         } catch (e) 
         {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async update(req, res){
@@ -32,7 +36,10 @@ class UserController
             return res.status(201).json(user2);  
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async getuser(req, res){
@@ -42,7 +49,11 @@ class UserController
             const user = await UserModel.findByPk(id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(200).json(user);
         } catch (e) {
-            return res.status(400).json(null);
+            console.log(e);
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
 
@@ -53,24 +64,42 @@ class UserController
             const lstfiltros = ["nome", "celular", "telefone","perfil","email", "sexo","estado", "ativo" ];
             const {help} = req.body;
             if(help)
-                return res.status(200).json({"filtros":lstfiltros, "tipo":"Like SQL"});
+                return res.status(200).json({
+                    "filtros":lstfiltros, 
+                    "tipo":"Like SQL",
+                    "paginador":"'qtdpagina' e 'pagina' "
+                });
+            const {pagina, qtdpagina}= req.body;
+            const paginador = funcPage(qtdpagina,pagina);
             let filtros = {};
             lstfiltros.forEach((namefiltro) => {
                 let newfiltro =lodash.get(req.body, namefiltro,"");
                 if(newfiltro != "")
                     filtros = {...filtros, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
             });
-            const users = await UserModel.findAll(
+            let users;
+            if(Object.keys(filtros).length == 0 )
+                users = await UserModel.findAll({
+                    attributes: {exclude: ['senha_criptografada']},
+                    ...paginador
+                });
+            else
+                users = await UserModel.findAll(
                 {
                     attributes: {exclude: ['senha_criptografada']},
-                    where:filtros
+                    where:{[Op.or]:filtros},
+                    ...paginador
                 }
             );
             return res.status(200).json(users);
             
         } catch (e)
         {
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+            console.log(e);
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
   
     }

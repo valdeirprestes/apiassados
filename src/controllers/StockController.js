@@ -1,6 +1,7 @@
 import StockModel from "../models/StockModel";
 import * as lodash from "lodash";
 import { Op } from "sequelize";
+import funcPage from "../utils/funcPage";
 class StockController{
     async add(req, res){
         try {
@@ -16,25 +17,49 @@ class StockController{
             return res.status(201).json(stock);
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async getall(req, res){
         try {
             const lstfiltros = ["idproduto","estado","operacao","datamovimento"];
+            const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+                    "filtros":lstfiltros, 
+                    "tipo":"Equal SQL",
+                    "paginador":"'qtdpagina' e 'pagina' "
+                });
+            const {pagina, qtdpagina}= req.body;
+            const paginador = funcPage(qtdpagina,pagina);
             let filtros = {};
+            let {datamovimento, ...resto} = req.body;
+            if(datamovimento)
+                datamovimento = new Date(datamovimento);
+            let body = {datamovimento, ...resto};
             lstfiltros.forEach((namefiltro) => {
-                let newfiltro =lodash.get(req.body, namefiltro,"");
+                let newfiltro =lodash.get(body, namefiltro,"");
                 if(newfiltro != "")
-                    filtros = {...filtros, [namefiltro]:newfiltro};
+                filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
             });
-            const lstmovements = await StockModel.findAll({
-                where:filtros,
-            });
-            return res.status(200).json(lstmovements);
+            let lststock;
+            if(Object.keys(filtros).length == 0)
+                lststock = await StockModel.findAll(paginador);
+            else
+                lststock = await StockModel.findAll({
+                    where:{[Op.and]:filtros},
+                    ...paginador
+                });
+            return res.status(200).json(lststock);
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
     async sub(req, res){
@@ -51,7 +76,10 @@ class StockController{
             return res.status(201).json(stock);
         } catch (e) {
             console.log(e);
-            return res.status(400).json({"errors":e.errors.map(err => err.message)});
+			const {errors} = e;
+			if(errors)
+				return res.status(400).json(e.errors.map(err => err.message));
+			return res.status(500).json({"errors":['Error interno na API']});
         }
     }
 }
