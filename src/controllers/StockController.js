@@ -2,6 +2,7 @@ import StockModel from "../models/StockModel";
 import * as lodash from "lodash";
 import { Op } from "sequelize";
 import funcPage from "../utils/funcPage";
+import errodeRota from "../utils/errodeRota";
 class StockController{
     async add(req, res){
         try {
@@ -16,11 +17,7 @@ class StockController{
             const stock = await StockModel.create(body)
             return res.status(201).json(stock);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async getall(req, res){
@@ -55,11 +52,7 @@ class StockController{
                 });
             return res.status(200).json(lststock);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async sub(req, res){
@@ -75,11 +68,7 @@ class StockController{
             const stock = await StockModel.create(body)
             return res.status(201).json(stock);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
 }

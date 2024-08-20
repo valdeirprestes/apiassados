@@ -1,6 +1,7 @@
 import  { DataTypes, Model }  from "sequelize";
 import { DataTypes } from "sequelize";
 import urlConfig from "../config/urlConfig";
+import CategoryModel from "../models/CategoryModel";
 
 export default class ProductModel extends Model{
     static init(sequelize)
@@ -20,6 +21,20 @@ export default class ProductModel extends Model{
                     }
                 }
             },
+            idcategoria:{
+                type: DataTypes.STRING,
+                allowNull:false,
+                validate:{
+                    notNull:{
+                        msg:"O campo idcategoria é obrigatório para informmar que usuário vai fechar o movimento"
+                    },
+                    async verifyFK(value){
+                      const category = await CategoryModel.findByPk(value);
+                      if(!category)
+                          throw new Error("O campo idcategoria  não foi registrado");
+                    }
+                }
+            },
             preco:{
                 type: DataTypes.DECIMAL(10,2),
                 allowNull:false,
@@ -33,6 +48,17 @@ export default class ProductModel extends Model{
             foto:{
                 type:DataTypes.STRING,
                 defaultValue:''
+            },
+            item_fechamento:{
+                type:DataTypes.STRING,
+                allowNull:false,
+                defaultValue:"NAO",
+                validate:{
+                    isIn:{
+                        args:[["SIM","NAO"]],
+                        msg:'O campo fechamento pode ser apenas SIM ou NAO'
+                    }
+                }
             },
             estado:{
                 type:DataTypes.STRING,
@@ -68,5 +94,6 @@ export default class ProductModel extends Model{
     static associate(models){
         this.hasMany(models.StockModel , {foreignKey:"idproduto"});
         this.hasMany(models.OrderItemModel , {foreignKey:"idproduto", as:"produto"});
+        this.belongsTo(models.CategoryModel, {foreignKey:"idcategoria", as:"categorias"})
     }
 }

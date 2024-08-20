@@ -2,7 +2,7 @@ import UserModel from "../models/UserModel";
 import * as lodash from "lodash";
 import { Op } from "sequelize";
 import funcPage from "../utils/funcPage";
-
+import errodeRota from "../utils/errodeRota";
 
 
 class UserController
@@ -17,11 +17,7 @@ class UserController
             return res.status(201).json(user2);
         } catch (e) 
         {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async update(req, res){
@@ -35,11 +31,7 @@ class UserController
             const user2 = await UserModel.findByPk(userupdate.id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(201).json(user2);  
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async getuser(req, res){
@@ -49,11 +41,7 @@ class UserController
             const user = await UserModel.findByPk(id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(200).json(user);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
 
@@ -95,11 +83,7 @@ class UserController
             
         } catch (e)
         {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
   
     }

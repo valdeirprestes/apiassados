@@ -3,6 +3,7 @@ import CloseMovementModel from "../models/CloseMovementModel";
 import * as lodash from "lodash";
 import { Op } from "sequelize";
 import funcPage from "../utils/funcPage";
+import errodeRota from "../utils/errodeRota";
 class MovementController
 {
     async post(req, res)
@@ -15,11 +16,7 @@ class MovementController
             const movement = await MovementModel.create(body);
             return res.status(201).json(movement);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
 
     }
@@ -72,11 +69,7 @@ class MovementController
             return res.status(200).json(lstmovements);
             
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
 
     }
@@ -92,11 +85,7 @@ class MovementController
             });
             return res.status(200).json(movement);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async close(req, res){
@@ -120,11 +109,7 @@ class MovementController
             return res.status(201).json(movement);
 
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async reopen(req, res){
@@ -147,11 +132,7 @@ class MovementController
             return res.status(201).json(movement);
             
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});            
+            return errodeRota(e, req, res);           
         }
         
     }

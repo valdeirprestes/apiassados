@@ -8,6 +8,7 @@ import StockModel from "../models/StockModel";
 import databaseConfig from "../config/databaseConfig";
 import {Op} from "sequelize";
 import funcPage from "../utils/funcPage";
+import errodeRota from "../utils/errodeRota";
 class OrderController{
 	async post(req, res){
 		try {
@@ -17,11 +18,7 @@ class OrderController{
 			const order = await OrderModel.create(body);
 			return res.status(201).json(order);
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 
@@ -41,11 +38,7 @@ class OrderController{
 			const	order = await OrderModel.create(body);
 			return res.status(201).json(order);
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async getall(req,res){
@@ -83,11 +76,7 @@ class OrderController{
 			return res.status(200).json(lstorders);
 
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async getalldetails(req,res){
@@ -154,11 +143,7 @@ class OrderController{
 			return res.status(200).json(lstorders);
 
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async insertitem(req, res){
@@ -177,11 +162,7 @@ class OrderController{
 			return res.status(201).json(itemorder);
 
 		} catch (e) {
-			cconsole.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async updateitem(req, res){
@@ -192,11 +173,7 @@ class OrderController{
 			const update_itemmorder = itemorder.update(req.body);
 			return res.status(200).json(update_itemmorder)
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async closeorder(req,res){
@@ -206,7 +183,10 @@ class OrderController{
 			const order = await OrderModel.findByPk(req.params.id,{
 				include:{
 					model:OrderItemModel,
-					as:"itens"
+					as:"itens",
+					while:{
+						"item_fechamento":"SIM"
+					}
 				}
 			});
 			if(!order)
@@ -221,6 +201,8 @@ class OrderController{
 			console.log('itens.length', itens.length);
 			console.log('itens', itens);
 			for (let i=0; i < itens.length; i++){
+				if( itens[i].estado =="NORMAL")
+				{
 					const obj = {
 						idproduto : itens[i].idproduto,
 						"operacao":"VENDA",
@@ -234,16 +216,13 @@ class OrderController{
 					console.log(obj);
 					console.log(`Create stock from product id ${itens[i].idproduto} from order id ${req.params.id}`);
 					let newstock = await StockModel.create(obj, {transaction:t});
+				}
 			}
 			await t.commit();
 			return res.status(201).json(updateorder);
 		} catch (e) {
 			await t.rollback();
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 	async cancel(req, res){
@@ -263,11 +242,7 @@ class OrderController{
 			const update_order = await order.update({"estado":"CANCELADO"});
 			return res.status(200).json(update_order)
 		} catch (e) {
-			console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+			return errodeRota(e, req, res);
 		}
 	}
 }

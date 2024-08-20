@@ -15,6 +15,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull:false,
       },
+      idcategoria:{
+        type:Sequelize.INTEGER,
+        allowNull:false,
+        references:{
+          model:"categorias",
+          key:"id"
+        }
+      },
       preco:{
         type: Sequelize.DECIMAL(10,2),
         allowNull:false
@@ -22,6 +30,10 @@ module.exports = {
       foto:{
         type:Sequelize.STRING,
         defaultValue:''
+      },
+      item_fechamento:{
+        type: Sequelize.STRING,
+        defaultValue:"NAO"
       },
       estado:{
         type:Sequelize.STRING,

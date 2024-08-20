@@ -8,6 +8,7 @@ import CloseMovementModel from "../models/CloseMovementModel";
 import StockModel from "../models/StockModel";
 import OrderModel from "../models/OrderModel";
 import OrderItemModel from "../models/OrderItemModel";
+import CategoryModel from "../models/CategoryModel";
 
 const models = [
     UserModel, 
@@ -16,7 +17,9 @@ const models = [
     CloseMovementModel, 
     StockModel, 
     OrderModel, 
-    OrderItemModel];
+    OrderItemModel,
+    CategoryModel,
+];
 const connection = new Sequelize(databaseConfig);
 models.forEach( model => model.init(connection));
 models.forEach(model=> model.associate && model.associate(connection.models));

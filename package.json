@@ -9,11 +9,14 @@
     "build": "sucrase src/ -d ./dist --transforms imports",
     "start": "node dist/server",
     "createtables": "npx sequelize-cli db:migrate",
-    "droptables": "npx sequelize-cli db:migrate:undo:all"
+    "droptables": "npx sequelize-cli db:migrate:undo:all",
+    "insertdata":"npx sequelize-cli db:seed:all",
+    "undoinsertdata":"npx sequelize-cli db:seed:undo"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

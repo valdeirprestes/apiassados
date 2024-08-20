@@ -46,6 +46,12 @@ class CloseMovementModel extends Model{
         estado:{
           type:DataTypes.STRING,
           defaultValue: 'NORMAL',
+          validate:{
+            isIn:{
+                args:[["NORMAL","CANCELADO"]],
+                msg:'O campo estado pode ser apenas NORMAL ou CANCELADO'
+            }
+        }
         },
         created_at:
         {

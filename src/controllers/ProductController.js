@@ -5,6 +5,7 @@ import multer from "multer";
 import multerConfig from "../config/multerConfig";
 const upload = multer(multerConfig).single("foto");
 import funcPage from "../utils/funcPage";
+import errodeRota from "../utils/errodeRota";
 
 
 class ProductController
@@ -17,13 +18,8 @@ class ProductController
             return res.status(201).json(newproduct);
         } catch (e) 
         {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
-
     }
     async getall(req, res){
         try {
@@ -53,11 +49,7 @@ class ProductController
             });
             return res.status(200).json(lstproducts);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async update(req, res)
@@ -70,11 +62,7 @@ class ProductController
             const updatedproduct = await product.update(req.body);
             return res.status(200).json(updatedproduct);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     async get(req, res)
@@ -86,11 +74,7 @@ class ProductController
                 return res.status(400).json({"errors":[`Não existe produto com o ${id}`]});
             return res.status(200).json(product);
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
     imgupload(req,res){
@@ -107,11 +91,7 @@ class ProductController
                 const updateproduct = await product.update({foto:img});
                 return res.status(201).json(updateproduct);
             } catch (e) {
-                console.log(e);
-                const {errors} = e;
-                if(errors)
-                    return res.status(400).json(e.errors.map(err => err.message));
-                return res.status(500).json({"errors":['Error interno na API']});
+                return errodeRota(e, req, res);
             }
         });
     }

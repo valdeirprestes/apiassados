@@ -5,6 +5,7 @@ import productrouter from "./routes/ProductRoute";
 import movementrouter from "./routes/MovementRoute";
 import stockrouter from "./routes/StockRoute";
 import orderroute from "./routes/OrderRoute";
+import categoryroute from "./routes/CategoryRoute";
 import "./database";
 import jsonerrorsmiddleware from "./middlewares/jsonerrorsMiddleware";
 import verifydbmiddleware from "./middlewares/verifydbMiddleware";
@@ -86,6 +87,7 @@ class App
         this.app.use("/token",tokenrouter);
         this.app.use("/estoque",stockrouter);
         this.app.use("/pedido",orderroute);
+        this.app.use("/categorias",categoryroute);
         this.app.get('*', (req,res, next) =>{ 
 			  res.status(404).json({"errors":["404 route not found"]});
 		  })

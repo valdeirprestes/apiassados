@@ -1,6 +1,6 @@
 import UserModel from "../models/UserModel";
 import jwt from "jsonwebtoken";
-
+import errodeRota from "../utils/errodeRota";
 class TokenController
 {
     async store(req, res){
@@ -22,11 +22,7 @@ class TokenController
                 });
             return res.status(200).json({id, nome, email, perfil:user.perfil, token});
         } catch (e) {
-            console.log(e);
-			const {errors} = e;
-			if(errors)
-				return res.status(400).json(e.errors.map(err => err.message));
-			return res.status(500).json({"errors":['Error interno na API']});
+            return errodeRota(e, req, res);
         }
     }
 }
