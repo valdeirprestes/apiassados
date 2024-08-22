@@ -6,7 +6,7 @@ const router = new Router();
 
 //router.post("/", jsonemptyMiddleware, tokenrequireMiddleware, productcontroller.post);
 router.post("/", tokenrequireMiddleware, productcontroller.post);
-router.get("/", productcontroller.getall);
+router.post("/todos", productcontroller.getall);
 router.put("/:id", tokenrequireMiddleware, productcontroller.update);
 router.get("/:id", productcontroller.get);
 router.post("/:id/foto", tokenrequireMiddleware, productcontroller.imgupload);

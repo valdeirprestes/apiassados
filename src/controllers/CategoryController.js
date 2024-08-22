@@ -41,12 +41,12 @@ class CategoryController
             });
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike };
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};
 
             let categorys;
-            if(Object.keys(todosfiltros).length == 0 )
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 categorys = await CategoryModel.findAll(paginador);
             else
                 categorys = await CategoryModel.findAll(
@@ -96,12 +96,12 @@ class CategoryController
             });
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike };  
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};
 
             let count;
-            if(Object.keys(todosfiltros).length == 0 )
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 count = await CategoryModel.count();
             else
                 count = await CategoryModel.count(

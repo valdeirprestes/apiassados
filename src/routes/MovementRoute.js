@@ -3,7 +3,7 @@ import movementcontroller from "../controllers/MovementController";
 import tokenrequiremiddleware from "../middlewares/tokenrequireMiddleware";
 const router = new Router();
 router.post("/", tokenrequiremiddleware, movementcontroller.post);
-router.get("/", movementcontroller.getall);
+router.post("/todos", movementcontroller.getall);
 router.get("/:id", movementcontroller.get);
 
 //open and close movement

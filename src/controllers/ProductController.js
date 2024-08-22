@@ -51,12 +51,12 @@ class ProductController
             
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike };
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};      
             let lstproducts;
             
-            if(Object.keys(todosfiltros).length == 0)
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 lstproducts = await ProductModel.findAll({
                     include:{
                         model:CategoryModel, as:"categoria"
@@ -148,12 +148,12 @@ class ProductController
 
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike }; 
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};      
 
             let countproducts;
-            if(Object.keys(todosfiltros).length == 0)
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 countproducts = await ProductModel.count();
             else
                 countproducts = await ProductModel.count({

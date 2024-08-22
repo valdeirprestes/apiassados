@@ -74,12 +74,11 @@ class UserController
             });
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike }; 
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};
-            
             let users;
-            if(Object.keys(todosfiltros).length == 0 )
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 users = await UserModel.findAll({
                     attributes: {exclude: ['senha_criptografada']},
                     ...paginador
@@ -127,12 +126,12 @@ class UserController
             });
             let todosfiltros= {}
             if(Object.keys(filtroslike).length > 0)
-                todosfiltros = filtroslike ; 
+                todosfiltros = {[Op.or]:filtroslike }; 
             if(Object.keys(filtrosequal).length > 0)
                 todosfiltros = {...todosfiltros, ...filtrosequal};      
             
             let countusers;
-            if(Object.keys(todosfiltros).length == 0 )
+            if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 countusers = await UserModel.count({});
             else
                 countusers = await UserModel.count({ where:todosfiltros});

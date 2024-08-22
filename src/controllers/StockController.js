@@ -46,7 +46,7 @@ class StockController{
                 filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
             });
             let lststock;
-            if(Object.keys(filtros).length == 0)
+            if(Object.getOwnPropertySymbols(filtros).length == 0 )
                 lststock = await StockModel.findAll(paginador);
             else
                 lststock = await StockModel.findAll({
@@ -94,7 +94,7 @@ class StockController{
                 filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
             });
             let lststock;
-            if(Object.keys(filtros).length == 0)
+            if(Object.getOwnPropertySymbols(filtros).length == 0 )
                 lststock = await StockModel.count();
             else
                 lststock = await StockModel.count({
