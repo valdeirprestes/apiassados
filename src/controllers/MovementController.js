@@ -28,8 +28,7 @@ class MovementController
             const {help} = req.body;
 			if(help)
                 return res.status(200).json({
-                    "filtros":lstfiltros, 
-                    "tipo":"Equal SQL",
+                    "filtrosequal":lstfiltros, 
                     "paginador":"'qtdpagina' e 'pagina' "
                 });
             const {pagina, qtdpagina}= req.body;
@@ -135,6 +134,55 @@ class MovementController
             return errodeRota(e, req, res);           
         }
         
+    }
+
+    async count(req, res)
+    {
+        try 
+        {
+            const lstfiltros = ["estado","operacao","data"];
+            const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+                    "filtrosequal":lstfiltros, 
+                    "paginador":"'qtdpagina' e 'pagina' "
+                });
+            let filtros = {};
+            let {data, ...resto} = req.body;
+            if(data)
+                data = new Date(data);
+            let body = {data, ...resto};
+            lstfiltros.forEach((namefiltro) => {
+                let newfiltro =lodash.get(body, namefiltro,"");
+                if(newfiltro != "")
+                    filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+            });
+            let countmov;
+            if(Object.keys(filtros).length == 0)
+                countmov = await MovementModel.count({
+                    include:{
+                        model:CloseMovementModel, 
+                        as:"fechamentos",
+                        attributes:["idmov","idusuario", "estado", "created_at","updated_at"],
+                        
+                    },
+                });
+            else
+                countmov = await MovementModel.count({
+                    include:{
+                        model:CloseMovementModel, 
+                        as:"fechamentos",
+                        attributes:["idmov","idusuario", "estado", "created_at","updated_at"],
+                        
+                    },
+                    where:{[Op.and]:filtros},
+                });
+            return res.status(200).json({"quantidade":countmov});
+            
+        } catch (e) {
+            return errodeRota(e, req, res);
+        }
+
     }
 }
 export default new MovementController();

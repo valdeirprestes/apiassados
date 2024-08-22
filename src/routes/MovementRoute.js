@@ -9,4 +9,7 @@ router.get("/:id", movementcontroller.get);
 //open and close movement
 router.post("/fechar", tokenrequiremiddleware, movementcontroller.close);
 router.post("/reabrir", tokenrequiremiddleware, movementcontroller.reopen);
+
+
+router.post("/quantidade", tokenrequiremiddleware, movementcontroller.count);
 export default router;

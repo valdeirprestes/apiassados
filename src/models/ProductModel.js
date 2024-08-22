@@ -92,8 +92,8 @@ export default class ProductModel extends Model{
     };
 
     static associate(models){
-        this.hasMany(models.StockModel , {foreignKey:"idproduto"});
-        this.hasMany(models.OrderItemModel , {foreignKey:"idproduto", as:"produto"});
-        this.belongsTo(models.CategoryModel, {foreignKey:"idcategoria", as:"categorias"})
+        this.hasMany(models.StockModel , {foreignKey:"idproduto", as:"produto"});
+        this.hasMany(models.OrderItemModel , {foreignKey:"idproduto"});
+        this.belongsTo(models.CategoryModel, {foreignKey:"idcategoria", as:"categoria"})
     }
 }

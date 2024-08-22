@@ -36,7 +36,7 @@ class UserController
     }
     async getuser(req, res){
         try {
-            
+            console.log("getuser");
             const id = req.params.id;
             const user = await UserModel.findByPk(id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(200).json(user);
@@ -49,24 +49,37 @@ class UserController
     {
         try 
         {   
-            const lstfiltros = ["nome", "celular", "telefone","perfil","email", "sexo","estado", "ativo" ];
+            const lstfiltroslike = ["nome", "celular", "telefone","email"];
+            const lstfiltrosequal = ["perfil","sexo", "estado", "ativo"];
             const {help} = req.body;
             if(help)
                 return res.status(200).json({
-                    "filtros":lstfiltros, 
-                    "tipo":"Like SQL",
+                    "filtroslike":lstfiltroslike, 
+                    "filtroequal":lstfiltrosequal,
                     "paginador":"'qtdpagina' e 'pagina' "
                 });
             const {pagina, qtdpagina}= req.body;
             const paginador = funcPage(qtdpagina,pagina);
-            let filtros = {};
-            lstfiltros.forEach((namefiltro) => {
+            let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
                 let newfiltro =lodash.get(req.body, namefiltro,"");
                 if(newfiltro != "")
-                    filtros = {...filtros, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
             });
+            let filtrosequal = {};
+            lstfiltrosequal.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
+            });
+            let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                todosfiltros = filtroslike ; 
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};
+            
             let users;
-            if(Object.keys(filtros).length == 0 )
+            if(Object.keys(todosfiltros).length == 0 )
                 users = await UserModel.findAll({
                     attributes: {exclude: ['senha_criptografada']},
                     ...paginador
@@ -75,7 +88,7 @@ class UserController
                 users = await UserModel.findAll(
                 {
                     attributes: {exclude: ['senha_criptografada']},
-                    where:{[Op.or]:filtros},
+                    where:todosfiltros,
                     ...paginador
                 }
             );
@@ -86,6 +99,50 @@ class UserController
             return errodeRota(e, req, res);
         }
   
+    }
+
+    async countuser (req, res){
+        try 
+        {   
+            const lstfiltroslike = ["nome", "celular", "telefone","email" ];
+            const lstfiltrosequal = ["perfil","sexo", "estado", "ativo"];
+            const {help} = req.body;
+            if(help)
+                return res.status(200).json({
+                    "filtroslike":lstfiltroslike, 
+                    "filtroequal":lstfiltrosequal
+                });
+            let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+            });
+            let filtrosequal = {};
+            lstfiltrosequal.forEach((namefiltro)=>{
+                let newfiltro = lodash.get(req.body,namefiltro,"");
+                if(newfiltro != "")
+                    filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
+
+            });
+            let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                todosfiltros = filtroslike ; 
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};      
+            
+            let countusers;
+            if(Object.keys(todosfiltros).length == 0 )
+                countusers = await UserModel.count({});
+            else
+                countusers = await UserModel.count({ where:todosfiltros});
+            return res.status(200).json({quantidade:countusers});
+            
+        } catch (e)
+        {
+            return errodeRota(e, req, res);
+        }
+
     }
 
 

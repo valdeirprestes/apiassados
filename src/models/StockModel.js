@@ -158,7 +158,7 @@ class StockModel extends Model{
     static associate(models){
         this.belongsTo(models.UserModel,{foreignKey:"idusuario"});
         this.belongsTo(models.UserModel,{foreignKey:"idusuarioalt"});
-        this.belongsTo(models.ProductModel,{foreignKey:"idproduto"});
+        this.belongsTo(models.ProductModel,{foreignKey:"idproduto", as:"produto"});
         
     }
 

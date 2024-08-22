@@ -5,6 +5,8 @@ import ProductModel from "../models/ProductModel";
 import {Sequelize, Transaction} from "sequelize";
 import * as lodash from "lodash";
 import StockModel from "../models/StockModel";
+import ProductModel from "../models/ProductModel";
+import OrderItemModel from "../models/OrderItemModel";
 import databaseConfig from "../config/databaseConfig";
 import {Op} from "sequelize";
 import funcPage from "../utils/funcPage";
@@ -85,8 +87,7 @@ class OrderController{
 			const {help} = req.body;
 			if(help)
                 return res.status(200).json({
-					"filtros":lstfiltros,
-					 "tipo":"Equal SQL",
+					"filtrosequal":lstfiltros,
 					 "paginador":"'qtdpagina' e 'pagina' "
 				});
 			const {pagina, qtdpagina}= req.body;
@@ -241,6 +242,105 @@ class OrderController{
 				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi cancelado`]});    
 			const update_order = await order.update({"estado":"CANCELADO"});
 			return res.status(200).json(update_order)
+		} catch (e) {
+			return errodeRota(e, req, res);
+		}
+	}
+
+
+	async count(req,res){
+		try {
+			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const {help} = req.body;
+			if(help)
+                return res.status(200).json({
+					"filtrosequal":lstfiltros
+				});
+		
+			let filtros = {};
+			let {datamovimento, ...resto} = req.body;
+			if(datamovimento)
+            	datamovimento = new Date(datamovimento);
+            let body = {datamovimento, ...resto};
+			lstfiltros.forEach((namefiltro) => {
+				let newfiltro =lodash.get(body, namefiltro,"");
+				if(newfiltro !== "" && newfiltro !== undefined)
+					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+			});
+			let countlstorders;
+			if(Object.keys(filtros).length == 0)
+				countlstorders = await OrderModel.count();
+			else
+				countlstorders = await OrderModel.count({
+				where:{[Op.and]:filtros}
+			});
+			return res.status(200).json({"quantidade":countlstorders});
+
+		} catch (e) {
+			return errodeRota(e, req, res);
+		}
+	}
+
+	async somaproduto(req,res){
+		console.log("somaproduto");
+		try {
+			const lstfiltros = ["idproduto", "estado","datamovimento"];
+			const {help} = req.body;
+			const sequelize = new Sequelize(databaseConfig);
+			if(help)
+                return res.status(200).json({
+					"filtrosequal":lstfiltros
+				});
+		
+			let filtros = {};
+			let {datamovimento, ...resto} = req.body;
+			if(datamovimento)
+            	datamovimento = new Date(datamovimento);
+            let body = {datamovimento, ...resto};
+			lstfiltros.forEach((namefiltro) => {
+				let newfiltro =lodash.get(body, namefiltro,"");
+				if(newfiltro !== "" && newfiltro !== undefined)
+					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+			});
+			let sumproduct;
+			if(Object.keys(filtros).length == 0)
+				sumproduct = await  OrderModel.findAll({
+					attributes:['datamovimento'],
+                    include: {
+                            model: OrderItemModel,
+                            as:'itens',
+							attributes:[
+								'idproduto', 
+								[sequelize.fn('SUM', sequelize.col('quantidade')), 'sub_quantidade']
+							],
+							include:{
+								model: ProductModel,
+								as: "produto"
+							}
+                    },
+                    group: [ 'itens.idproduto']
+				});
+			else
+				sumproduct = await  OrderModel.findAll({
+					attributes:['datamovimento'],
+					include: {
+							model: OrderItemModel,
+							as:'itens',
+							attributes:[
+								'idproduto', 
+								[sequelize.fn('SUM', sequelize.col('quantidade')), 'sub_quantidade']
+							],
+							include:{
+								model: ProductModel,
+								as: "produto"
+							}
+					},
+					group: [ 'itens.idproduto'],
+					where:{[Op.and]:filtros}
+				});
+			
+			return res.status(200).json(sumproduct);
+
 		} catch (e) {
 			return errodeRota(e, req, res);
 		}

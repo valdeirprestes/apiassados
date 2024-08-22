@@ -6,6 +6,7 @@ import multerConfig from "../config/multerConfig";
 const upload = multer(multerConfig).single("foto");
 import funcPage from "../utils/funcPage";
 import errodeRota from "../utils/errodeRota";
+import CategoryModel from "../models/CategoryModel";
 
 
 class ProductController
@@ -23,30 +24,54 @@ class ProductController
     }
     async getall(req, res){
         try {
-            const lstfiltros = ["nome", "estado" ];
+            const lstfiltroslike = ["nome"];
+            const lstfiltrosequal = ["item_fechamento", "estado", "idcategoria"];
             const {help} = req.body;
             if(help)
                 return res.status(200).json({
-                    "filtros":lstfiltros,
-                     "tipo":"Like SQL",
+                    "filtroslike":lstfiltroslike,
+                    "filtrosequal":lstfiltrosequal,
                      "paginador":"'qtdpagina' e 'pagina' "
                 });
             const {pagina, qtdpagina}= req.body;
             const paginador = funcPage(qtdpagina,pagina);
-            let filtros = {};
-            lstfiltros.forEach((namefiltro) => {
+            
+            let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
                 let newfiltro =lodash.get(req.body, namefiltro,"");
                 if(newfiltro != "")
-                    filtros = {...filtros, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
             });
+            let filtrosequal = {};
+            lstfiltrosequal.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
+            });
+            
+            let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                todosfiltros = filtroslike ; 
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};      
             let lstproducts;
-            if(Object.keys(filtros).length == 0)
-                lstproducts = await ProductModel.findAll(paginador);
+            
+            if(Object.keys(todosfiltros).length == 0)
+                lstproducts = await ProductModel.findAll({
+                    include:{
+                        model:CategoryModel, as:"categoria"
+                    },
+                    ...paginador
+            });
             else
                 lstproducts = await ProductModel.findAll({
-                where:{[Op.or]:filtros},
+                include:{
+                    model:CategoryModel, as:"categoria"
+                },
+                where:todosfiltros,
                 ...paginador
             });
+            
             return res.status(200).json(lstproducts);
         } catch (e) {
             return errodeRota(e, req, res);
@@ -56,20 +81,22 @@ class ProductController
     {
         try {
             const id = req.params.id;
-            const product =await ProductModel.findByPk(id);
+            let product =await ProductModel.findByPk(id);
             if(!product)
                 return res.status(400).json({"errors":[`Não existe produto com o ${id}`]});
-            const updatedproduct = await product.update(req.body);
-            return res.status(200).json(updatedproduct);
+            const updatedproduct = await product.update(req.body, { include:[{ "model":CategoryModel, as:"categoria"}]});
+            product =await ProductModel.findByPk(id, { include:[{ "model":CategoryModel, as:"categoria"}]});
+            return res.status(200).json(product);
         } catch (e) {
             return errodeRota(e, req, res);
         }
     }
     async get(req, res)
     {
+        console.log("get");
         try {
             const id = req.params.id;
-            const product =await ProductModel.findByPk(id);
+            const product =await ProductModel.findByPk(id, { include:[{ "model":CategoryModel, as:"categoria"}]});
             if(!product)
                 return res.status(400).json({"errors":[`Não existe produto com o ${id}`]});
             return res.status(200).json(product);
@@ -94,6 +121,48 @@ class ProductController
                 return errodeRota(e, req, res);
             }
         });
+    }
+
+    async count(req, res){
+        try {
+            const lstfiltroslike = ["nome"];
+            const lstfiltrosequal = ["item_fechamento", "estado", "idcategoria"];
+            const {help} = req.body;
+            if(help)
+                return res.status(200).json({
+                    "filtroslike":lstfiltroslike,
+                    "filtrosequal":lstfiltrosequal
+                });
+            let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+            });
+            let filtrosequal = {};
+            lstfiltrosequal.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
+            });
+
+            let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                todosfiltros = filtroslike ; 
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};      
+
+            let countproducts;
+            if(Object.keys(todosfiltros).length == 0)
+                countproducts = await ProductModel.count();
+            else
+                countproducts = await ProductModel.count({
+                where:todosfiltros,
+                });
+            return res.status(200).json({"quantidade":countproducts});
+        } catch (e) {
+            return errodeRota(e, req, res);
+        }
     }
 }
 
