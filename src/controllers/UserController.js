@@ -12,6 +12,10 @@ class UserController
     {
         try
         {
+            const user = await UserModel.findOne({while:{email:req.body.email}});
+            if(user){
+                return res.status(400).json({"errors":[`O campo email  ${req.body.email} já foi cadastrado`]});
+            }
             const newuser = await UserModel.create(req.body);
             const user2 = await UserModel.findByPk(newuser.id, {attributes: {exclude: ['senha_criptografada']}});
             return res.status(201).json(user2);
