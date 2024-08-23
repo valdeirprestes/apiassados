@@ -107,6 +107,7 @@ class UserController
     async countuser (req, res){
         try 
         {   
+			  console.log(req.body);
             const lstfiltroslike = ["nome", "celular", "telefone","email" ];
             const lstfiltrosequal = ["perfil","sexo", "estado", "ativo"];
             const {help} = req.body;
