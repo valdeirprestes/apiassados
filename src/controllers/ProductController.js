@@ -7,6 +7,8 @@ const upload = multer(multerConfig).single("foto");
 import funcPage from "../utils/funcPage";
 import errodeRota from "../utils/errodeRota";
 import CategoryModel from "../models/CategoryModel";
+import Sequelize from "sequelize";
+import databaseConfig from "../config/databaseConfig";
 
 
 class ProductController
@@ -26,6 +28,7 @@ class ProductController
         try {
             const lstfiltroslike = ["nome"];
             const lstfiltrosequal = ["item_fechamento", "estado", "idcategoria"];
+            const sequelize = new Sequelize(databaseConfig);
             const {help} = req.body;
             if(help)
                 return res.status(200).json({
@@ -58,15 +61,42 @@ class ProductController
             
             if(Object.getOwnPropertySymbols(todosfiltros).length == 0 )
                 lstproducts = await ProductModel.findAll({
+                    attributes:[
+                        "id",
+                        "nome",
+                        "idcategoria",
+                        "preco",
+                        "foto",
+                        "url",
+                        "item_fechamento",
+                        "estado",
+                        "created_at",
+                        "updated_at",
+                        [sequelize.col("categoria.nome"),'category']
+                    ],
                     include:{
-                        model:CategoryModel, as:"categoria"
+                        model:CategoryModel, as:"categoria",
+                        
                     },
                     ...paginador
             });
             else
                 lstproducts = await ProductModel.findAll({
+                    attributes:[
+                        "id",
+                        "nome",
+                        "idcategoria",
+                        "preco",
+                        "foto",
+                        "url",
+                        "item_fechamento",
+                        "estado",
+                        "created_at",
+                        "updated_at",
+                        [sequelize.col("categoria.nome"),'category']
+                    ],
                 include:{
-                    model:CategoryModel, as:"categoria"
+                    model:CategoryModel, as:"categoria",
                 },
                 where:todosfiltros,
                 ...paginador
