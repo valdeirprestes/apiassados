@@ -6,4 +6,5 @@ route.post('/', tokenrequireMiddleware, categorycontroller.post);
 route.post("/todos", categorycontroller.getall);
 route.put("/:id", tokenrequireMiddleware, categorycontroller.update);
 route.post("/quantidade", tokenrequireMiddleware, categorycontroller.count)
+route.get("/:id", tokenrequireMiddleware, categorycontroller.get);
 export default route;

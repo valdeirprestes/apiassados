@@ -60,6 +60,16 @@ class CategoryController
             return errodeRota(e, req, res);
         }
     }
+    async get(req, res){
+        try {
+            const category = await CategoryModel.findByPk(req.params.id);
+            if(!category)
+                res.status(400).json({"errors":[`A categoria com id ${req.params.id} não localizada`]});
+            return res.status(200).json(category);
+        } catch (e) {
+            return errodeRota(e, req, res);
+        }
+    }
     async update(req, res){
         try {
             const category = await CategoryModel.findByPk(req.params.id);
