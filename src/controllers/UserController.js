@@ -5,6 +5,7 @@ import funcPage from "../utils/funcPage";
 import errodeRota from "../utils/errodeRota";
 
 
+
 class UserController
 {
 
@@ -12,8 +13,9 @@ class UserController
     {
         try
         {
+            const {email} =  req.body;
             const user = await UserModel.findOne({while:{email:req.body.email}});
-            if(user){
+            if(!user && email ){
                 return res.status(400).json({"errors":[`O campo email  ${req.body.email} já foi cadastrado`]});
             }
             const newuser = await UserModel.create(req.body);
@@ -24,6 +26,7 @@ class UserController
             return errodeRota(e, req, res);
         }
     }
+    
     async update(req, res){
         try {
             const id = req.params.id;

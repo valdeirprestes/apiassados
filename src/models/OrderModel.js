@@ -134,7 +134,7 @@ class OrderModel extends Model{
     }
 
     static associate(models){
-        this.belongsTo(models.UserModel, {foreignKey:"idcliente",as:"cliente"});
+        this.belongsTo(models.UserModel, {foreignKey:"idcliente",as:"cliente", sourceKey: "id"});
         this.belongsTo(models.UserModel, {foreignKey:"idusuario"});
         this.belongsTo(models.UserModel, {foreignKey:"idusuarioalt"});
         this.hasMany(models.OrderItemModel, {foreignKey:"idpedido", as:"itens"});

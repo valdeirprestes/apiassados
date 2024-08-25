@@ -31,13 +31,18 @@ class OrderController{
 			
 			let include = {
 				include:[{
-					association: 'OrdemItemModel',
-					as: 'itens'
-				}]
+					model: OrderItemModel,
+					as: 'itens',
+				},
+				{
+					model:UserModel,
+					as:"cliente"
+				}
+			]
 			};
 			let body = {edicao, ...resto};
 			console.log('body', body);
-			const	order = await OrderModel.create(body);
+			const	order = await OrderModel.create(body, include);
 			return res.status(201).json(order);
 		} catch (e) {
 			return errodeRota(e, req, res);

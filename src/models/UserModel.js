@@ -29,15 +29,12 @@ export default class UserModel extends Sequelize.Model
             },
             email:{
                 type: DataTypes.STRING,
-                allowNull: false,
+                allowNull: true,
 						unique:{
 							args:true,
 							msg:"O campo email já foi registrado"
 						},
                 validate:{
-                    notNull:{
-                        msg:'O campo email é obrigátorio',
-                    },
                     isEmail:{
                         msg:'Email inválido'
                     }
