@@ -35,6 +35,11 @@ module.exports = {
         type: Sequelize.STRING,
         defaultValue:"NAO"
       },
+      unidade_parcial:{
+        type: Sequelize.STRING,
+        allowNull:false,
+        defaultValue:"NAO"
+      },
       estado:{
         type:Sequelize.STRING,
       },

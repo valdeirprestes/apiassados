@@ -18,6 +18,8 @@ class ProductController
         try
         {
             const newproduct = await ProductModel.create(req.body);
+            if(!newproduct)
+                return res.status(400).json(errors.map(err => err.message));
             return res.status(201).json(newproduct);
         } catch (e) 
         {
@@ -69,6 +71,7 @@ class ProductController
                         "foto",
                         "url",
                         "item_fechamento",
+							   "unidade_parcial",
                         "estado",
                         "created_at",
                         "updated_at",
@@ -90,6 +93,7 @@ class ProductController
                         "foto",
                         "url",
                         "item_fechamento",
+							   "unidade_parcial",
                         "estado",
                         "created_at",
                         "updated_at",

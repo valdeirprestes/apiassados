@@ -90,7 +90,7 @@ class OrderModel extends Model{
                         msg:"O campo status_pagamento é obrigatório"
                     },
                     isIn:{
-                        args:[["PAGO","PENDENTE"]],
+                        args:[["PAGO","PENDENTE","AVISTA", "CARTÃODECREDITO"]],
                         msg:'O campo status_pagamento pode ser apenas PAGO ou PENDENTE'
                     }
                 }

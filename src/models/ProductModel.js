@@ -60,6 +60,21 @@ export default class ProductModel extends Model{
                     }
                 }
             },
+            unidade_parcial:{
+                type: DataTypes.STRING,
+                allowNull:false,
+                defaultValue:"NAO",
+                validate:{
+                    notNull:{
+                        msg:"Preencha o campo unidade_parcial respondendo SIM se o produto pode ser  parcial como kilos ou NÃO (inteiro como refrigerante)"
+                    },
+                    isIn:{
+                        args:[["SIM", "NAO"]],
+                        msg:"Preencha o campo unidade_parcial respondendo SIM se o produto pode ser  parcial como kilos ou NÃO (inteiro como refrigerante)"
+                    }
+                }
+
+            },
             estado:{
                 type:DataTypes.STRING,
                 defaultValue:'NORMAL',

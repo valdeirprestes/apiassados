@@ -13,8 +13,11 @@ router.post("/:id/fecharpedido", tokenrequireMiddleware, ordercontroller.closeor
 router.post("/:id/cancelar", tokenrequireMiddleware, ordercontroller.cancel);
 
 router.post("/quantidade", tokenrequireMiddleware, ordercontroller.count);
-router.get("/somaitemproduto", tokenrequireMiddleware, ordercontroller.somaproduto);
+router.post("/somaitemproduto", tokenrequireMiddleware, ordercontroller.somaproduto);
 
+router.get("/:id", tokenrequireMiddleware, ordercontroller.getdataorder );
 
+router.put("/atualizar", tokenrequireMiddleware, ordercontroller.atualizar);
 router.post("/criar2", tokenrequireMiddleware, ordercontroller.post2);
+router.put("/atualizar2", tokenrequireMiddleware, ordercontroller.atualizar2);
 export default router;
