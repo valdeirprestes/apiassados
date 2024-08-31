@@ -365,9 +365,9 @@ class OrderController{
 			if(!order)
 				res.status(400).json({"errors":[`Não foi encontrado o pedido de id ${req.params.id}`]});
 			if(order.fase === "CONCLUIDO")
-				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi concluído`]});
+				return res.status(400).json({"errors":[`O pedido ${order.id} já foi concluído`]});
 			if(order.estado === "CANCELADO")
-				return res.status(400).json({"errors":[`O pedido ${idpedido} já foi cancelado`]});
+				return res.status(400).json({"errors":[`O pedido ${order.id} já foi cancelado`]});
 			const updateorder = await order.update({fase:"CONCLUIDO"}, {transaction:t});
 			const  {datamovimento, itens} =  order;
 			
