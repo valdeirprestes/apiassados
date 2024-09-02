@@ -49,6 +49,10 @@ class OrderItemModel extends Model{
                 validate:{
                     isNumeric:{
                         msg:"O campo preço deve ter preenchido com valor númerico"
+                    },
+                    min:{
+                        args: [0],
+                        msg:"O campo preco não pode ter valor menor que zero"
                     }
                 }
             },
@@ -58,6 +62,13 @@ class OrderItemModel extends Model{
                 validate:{
                     notNull:{
                         msg:"O campo quantidade é obrigatório"
+                    },
+                    isNumeric:{
+                        msg:"O campo quantidade deve ter preenchido com valor númerico"
+                    },
+                    min:{
+                        args: [0],
+                        msg:"O campo quantidade não pode ter valor menor que zero"
                     }
                 }
             },

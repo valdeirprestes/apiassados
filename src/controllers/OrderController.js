@@ -95,6 +95,7 @@ class OrderController{
 	async getall(req,res){
 		try {
 			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const lstfiltroslike = ["nomecliente", "telefonecliente", "celularcliente", "emailcelular"];
 			const {help} = req.body;
 			if(help)
                 return res.status(200).json({
@@ -104,23 +105,38 @@ class OrderController{
 				});
 			const {pagina, qtdpagina}= req.body;
 			const paginador = funcPage(qtdpagina,pagina);
-			let filtros = {};
+			let filtrosequal = {};
 			let {datamovimento, ...resto} = req.body;
 			if(datamovimento)
             	datamovimento = new Date(datamovimento);
             let body = {datamovimento, ...resto};
-			lstfiltros.forEach((namefiltro) => {
+			lstfiltrosequal.forEach((namefiltro) => {
 				let newfiltro =lodash.get(body, namefiltro,"");
 				if(newfiltro !== "" && newfiltro !== undefined)
-					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+					filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
 			});
+
+			let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+            });
+
+			let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                todosfiltros = {[Op.or]:filtroslike };
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};  
+
+
 			let lstorders;
-			if(Object.keys(filtros).length == 0)
+			if(Object.keys(todosfiltros).length == 0 && Object.getOwnPropertySymbols(todosfiltros).length == 0)
 				lstorders = await OrderModel.findAll({include:{ model: OrderItemModel, as:"itens" }, ...paginador});
 			else{
 				lstorders = await OrderModel.findAll({
 					include:{ model: OrderItemModel, as:"itens" },
-					where:{[Op.and]:filtros},
+					where:{[Op.and]:todosfiltros},
 					...paginador
 				});
 			}
@@ -165,27 +181,44 @@ class OrderController{
 	}
 	async getalldetails(req,res){
 		try {
-			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const lstfiltrosequal = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const lstfiltroslike = ["nome", "telefone", "celular", "email"];
 			const lstItenfiltros = ['estado'];
 			const {help} = req.body;
 			if(help)
                 return res.status(200).json({
-					"filtrosequal":lstfiltros,
+					"filtrosequal":lstfiltrosequal,
+					"filtroslike":lstfiltroslike,
 					 "paginador":"'qtdpagina' e 'pagina' ",
 					 "itens":"{estado:NORMAL|CANCELADO}"
 				});
 			const {pagina, qtdpagina}= req.body;
 			const paginador = funcPage(qtdpagina,pagina);
-			let filtros = {};
+			const sequelize = new Sequelize(databaseConfig);
+			let filtrosequal = {};
 			let {datamovimento, itens, ...resto} = req.body;
 			if(datamovimento)
             	datamovimento = new Date(datamovimento);
             let body = {datamovimento, itens, ...resto};
-			lstfiltros.forEach((namefiltro) => {
+			lstfiltrosequal.forEach((namefiltro) => {
 				let newfiltro =lodash.get(body, namefiltro,"");
 				if(newfiltro !== "" && newfiltro !== undefined)
-					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+					filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
 			});
+			let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+            });
+			let clientefiltro = {};
+			let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                clientefiltro = {where:{[Op.or]:filtroslike }};
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};
+
+
 			let filtroitens= {};
 			console.log("\n\nitens\n\n", itens,"\n\n");
 			if(itens ){
@@ -198,17 +231,38 @@ class OrderController{
 				if(Object.getOwnPropertySymbols(filtroitens).length > 0 || Object.getOwnPropertyNames(filtroitens).length > 0)
 					filtroitens = {where:filtroitens}
 			}
-			
+
 			let lstorders;
-			if(Object.keys(filtros).length == 0 || Object.getOwnPropertyNames(filtros).length == 0)
+			if(Object.keys(todosfiltros).length == 0 &&
+			Object.getOwnPropertySymbols(todosfiltros).length == 0 && 
+			Object.getOwnPropertyNames(todosfiltros).length == 0)
 				lstorders = await OrderModel.findAll({
+					attributes:[
+						"id",
+						"idcliente",
+						"idusuario",
+						"idusuarioalt",
+						"fase",
+						"estado",
+						"status_pagamento",
+						"mododeentrega",
+						"edicao",
+						"datamovimento",
+						"created_at",
+						"updated_at",
+						[sequelize.col("cliente.nome"),'nomecliente'],
+						[sequelize.col("cliente.telefone"),'telefonecliente'],
+						[sequelize.col("cliente.celular"),'celularcliente'],
+						[sequelize.col("cliente.email"),'emailcliente'],
+					],
 					include:[
 						{ model: UserModel, 
 							as:"cliente",
 							"attributes":
 							{ 
 								"exclude":["senha_criptografada"]
-							}
+							},
+							...clientefiltro
 						} ,
 						{ 
 							model: OrderItemModel, as:"itens",
@@ -222,13 +276,32 @@ class OrderController{
 				});
 			else
 				lstorders = await OrderModel.findAll({
+					attributes:[
+						"id",
+						"idcliente",
+						"idusuario",
+						"idusuarioalt",
+						"fase",
+						"estado",
+						"status_pagamento",
+						"mododeentrega",
+						"edicao",
+						"datamovimento",
+						"created_at",
+						"updated_at",
+						[sequelize.col("cliente.nome"),'nomecliente'],
+						[sequelize.col("cliente.telefone"),'telefonecliente'],
+						[sequelize.col("cliente.celular"),'celularcliente'],
+						[sequelize.col("cliente.email"),'emailcliente'],
+					],
 				include:[
 					{ model: UserModel, 
 						as:"cliente",
 						"attributes":
 						{ 
 							"exclude":["senha_criptografada"]
-						}
+						},
+						...clientefiltro
 					} ,
 					{ 
 						model: OrderItemModel, as:"itens",
@@ -237,7 +310,7 @@ class OrderController{
 						},
 						...filtroitens
 					}],
-				where:{[Op.and]:filtros},
+				where:{[Op.and]:todosfiltros},
 				...paginador
 			});
 			return res.status(200).json(lstorders);
@@ -363,7 +436,7 @@ class OrderController{
 				}
 			});
 			if(!order)
-				res.status(400).json({"errors":[`Não foi encontrado o pedido de id ${req.params.id}`]});
+				return res.status(400).json({"errors":[`Não foi encontrado o pedido de id ${req.params.id}`]});
 			if(order.fase === "CONCLUIDO")
 				return res.status(400).json({"errors":[`O pedido ${order.id} já foi concluído`]});
 			if(order.estado === "CANCELADO")
@@ -410,46 +483,113 @@ class OrderController{
 				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi concluído`]});
 			if(order.estado === "CANCELADO")
 				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi cancelado`]});    
-			const update_order = await order.update({"estado":"CANCELADO"});
+			const update_order = await order.update({"estado":"CANCELADO", fase:"CANCELADO"});
 			return res.status(200).json(update_order)
 		} catch (e) {
 			return errodeRota(e, req, res);
 		}
 	}
 
-
 	async count(req,res){
 		try {
-			const lstfiltros = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const lstfiltrosequal = ["idcliente","idusuario","fase","datamovimento", "estado","mododeentrega"];
+			const lstfiltroslike = ["nome", "telefone", "celular", "email"];
+			const lstItenfiltros = ['estado'];
 			const {help} = req.body;
 			if(help)
                 return res.status(200).json({
-					"filtrosequal":lstfiltros
+					"filtrosequal":lstfiltrosequal,
+					"filtroslike":lstfiltroslike,
+					 "paginador":"'qtdpagina' e 'pagina' ",
+					 "itens":"{estado:NORMAL|CANCELADO}"
 				});
-		
-			let filtros = {};
-			let {datamovimento, ...resto} = req.body;
+			let filtrosequal = {};
+			let {datamovimento, itens, ...resto} = req.body;
 			if(datamovimento)
             	datamovimento = new Date(datamovimento);
-            let body = {datamovimento, ...resto};
-			lstfiltros.forEach((namefiltro) => {
+            let body = {datamovimento, itens, ...resto};
+			lstfiltrosequal.forEach((namefiltro) => {
 				let newfiltro =lodash.get(body, namefiltro,"");
 				if(newfiltro !== "" && newfiltro !== undefined)
-					filtros = {...filtros, [namefiltro]:{[Op.eq]:newfiltro}};
+					filtrosequal = {...filtrosequal, [namefiltro]:{[Op.eq]:newfiltro}};
 			});
-			let countlstorders;
-			if(Object.keys(filtros).length == 0)
-				countlstorders = await OrderModel.count();
+			let filtroslike = {};
+            lstfiltroslike.forEach((namefiltro) => {
+                let newfiltro =lodash.get(req.body, namefiltro,"");
+                if(newfiltro != "")
+                    filtroslike = {...filtroslike, [namefiltro]:{[Op.like]:`%${newfiltro}%`}};
+            });
+			let clientefiltro = {};
+			let todosfiltros= {}
+            if(Object.keys(filtroslike).length > 0)
+                clientefiltro = {where:{[Op.or]:filtroslike }};
+            if(Object.keys(filtrosequal).length > 0)
+                todosfiltros = {...todosfiltros, ...filtrosequal};
+
+
+			let filtroitens= {};
+			console.log("\n\nitens\n\n", itens,"\n\n");
+			if(itens ){
+				lstItenfiltros.forEach((namefiltro)=>{
+					let newfiltro = lodash.get(itens, namefiltro, "");
+					console.log("filtro", newfiltro);
+					if(newfiltro !== "" && newfiltro !==undefined)
+						filtroitens = {... filtroitens, [namefiltro] : {[Op.eq]:newfiltro}};
+				});
+				if(Object.getOwnPropertySymbols(filtroitens).length > 0 || Object.getOwnPropertyNames(filtroitens).length > 0)
+					filtroitens = {where:filtroitens}
+			}
+
+			let lstorders;
+			if(Object.keys(todosfiltros).length == 0 &&
+			Object.getOwnPropertySymbols(todosfiltros).length == 0 && 
+			Object.getOwnPropertyNames(todosfiltros).length == 0)
+				lstorders = await OrderModel.count({
+					include:[
+						{ model: UserModel, 
+							as:"cliente",
+							"attributes":
+							{ 
+								"exclude":["senha_criptografada"]
+							},
+							...clientefiltro
+						} ,
+						{ 
+							model: OrderItemModel, as:"itens",
+							include:{
+								model:ProductModel, as:"produto",
+							},
+							...filtroitens
+						}
+					]
+				});
 			else
-				countlstorders = await OrderModel.count({
-				where:{[Op.and]:filtros}
+				lstorders = await OrderModel.count({
+				include:[
+					{ model: UserModel, 
+						as:"cliente",
+						"attributes":
+						{ 
+							"exclude":["senha_criptografada"]
+						},
+						...clientefiltro
+					} ,
+					{ 
+						model: OrderItemModel, as:"itens",
+						include:{
+							model:ProductModel, as:"produto",
+						},
+						...filtroitens
+					}],
+				where:{[Op.and]:todosfiltros}
 			});
-			return res.status(200).json({"quantidade":countlstorders});
+			return res.status(200).json(lstorders);
 
 		} catch (e) {
 			return errodeRota(e, req, res);
 		}
 	}
+	
 
 	async somaproduto(req,res){
 		console.log("somaproduto");
