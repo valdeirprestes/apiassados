@@ -170,9 +170,9 @@ class OrderController{
 							model:ProductModel, as:"produto",
 							
 						}],
-						...filtroestado
 					}
 				],
+			...filtroestado
 			});
 			return res.status(200).json(order);
 		} catch (e) {
@@ -228,15 +228,18 @@ class OrderController{
 					if(newfiltro !== "" && newfiltro !==undefined)
 						filtroitens = {... filtroitens, [namefiltro] : {[Op.eq]:newfiltro}};
 				});
-				if(Object.getOwnPropertySymbols(filtroitens).length > 0 || Object.getOwnPropertyNames(filtroitens).length > 0)
+				if(Object.keys(filtroitens).length >0 || 
+					Object.getOwnPropertySymbols(filtroitens).length > 0 || 
+					Object.getOwnPropertyNames(filtroitens).length > 0)
 					filtroitens = {where:filtroitens}
 			}
-
+			console.log('todosfiltros', todosfiltros);
 			let lstorders;
 			if(Object.keys(todosfiltros).length == 0 &&
 			Object.getOwnPropertySymbols(todosfiltros).length == 0 && 
 			Object.getOwnPropertyNames(todosfiltros).length == 0)
 				lstorders = await OrderModel.findAll({
+							separate: true,
 					attributes:[
 						"id",
 						"idcliente",
@@ -250,10 +253,6 @@ class OrderController{
 						"datamovimento",
 						"created_at",
 						"updated_at",
-						[sequelize.col("cliente.nome"),'nomecliente'],
-						[sequelize.col("cliente.telefone"),'telefonecliente'],
-						[sequelize.col("cliente.celular"),'celularcliente'],
-						[sequelize.col("cliente.email"),'emailcliente'],
 					],
 					include:[
 						{ model: UserModel, 
@@ -276,6 +275,7 @@ class OrderController{
 				});
 			else
 				lstorders = await OrderModel.findAll({
+				...paginador,
 					attributes:[
 						"id",
 						"idcliente",
@@ -289,10 +289,6 @@ class OrderController{
 						"datamovimento",
 						"created_at",
 						"updated_at",
-						[sequelize.col("cliente.nome"),'nomecliente'],
-						[sequelize.col("cliente.telefone"),'telefonecliente'],
-						[sequelize.col("cliente.celular"),'celularcliente'],
-						[sequelize.col("cliente.email"),'emailcliente'],
 					],
 				include:[
 					{ model: UserModel, 
@@ -310,8 +306,7 @@ class OrderController{
 						},
 						...filtroitens
 					}],
-				where:{[Op.and]:todosfiltros},
-				...paginador
+				where:todosfiltros,
 			});
 			return res.status(200).json(lstorders);
 
@@ -483,7 +478,7 @@ class OrderController{
 				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi concluído`]});
 			if(order.estado === "CANCELADO")
 				return res.status(400).json({"errors":[`O pedido ${req.params.id} já foi cancelado`]});    
-			const update_order = await order.update({"estado":"CANCELADO", fase:"CANCELADO"});
+			const update_order = await order.update({"estado":"CANCELADO"});
 			return res.status(200).json(update_order)
 		} catch (e) {
 			return errodeRota(e, req, res);
@@ -581,7 +576,7 @@ class OrderController{
 						},
 						...filtroitens
 					}],
-				where:{[Op.and]:todosfiltros}
+				where:todosfiltros
 			});
 			return res.status(200).json(lstorders);
 
