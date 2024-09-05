@@ -155,6 +155,7 @@ class OrderController{
 			if(estadoitens){
 				filtroestado = {"where":{"estado":estadoitens}}
 			}
+			console.log('filtroestado', filtroestado);
 			const order = await await OrderModel.findByPk(req.params.id,{
 				include:[
 					{ model: UserModel, 
@@ -170,9 +171,9 @@ class OrderController{
 							model:ProductModel, as:"produto",
 							
 						}],
+						...filtroestado
 					}
 				],
-			...filtroestado
 			});
 			return res.status(200).json(order);
 		} catch (e) {
