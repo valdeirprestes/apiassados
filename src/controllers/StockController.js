@@ -1,4 +1,6 @@
 import StockModel from "../models/StockModel";
+import CategoryModel from "../models/CategoryModel";
+
 import * as lodash from "lodash";
 import { Op } from "sequelize";
 import funcPage from "../utils/funcPage";
@@ -154,7 +156,12 @@ class StockController{
                         [sequelize.literal('(entrada - saida)'), 'saldo']],
                     include:{
                             model: ProductModel,
-                            as:'produto'
+                            as:'produto',
+									 include:{
+										 model: CategoryModel,
+										 as: 'categoria'
+									 }
+
                     },
                     group: 'idproduto' ,
                     where:{[Op.and]:filtros},
