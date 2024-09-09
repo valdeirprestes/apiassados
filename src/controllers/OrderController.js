@@ -616,13 +616,15 @@ class OrderController{
                             model: OrderItemModel,
                             as:'itens',
 							attributes:[
-								'idproduto', 
+								'idproduto',
+								'estado',
 								[sequelize.fn('SUM', sequelize.col('quantidade')), 'sub_quantidade']
 							],
 							include:{
 								model: ProductModel,
 								as: "produto"
-							}
+							},
+						   where:{"estado":"NORMAL"}
                     },
                     group: [ 'itens.idproduto']
 				});
@@ -633,13 +635,15 @@ class OrderController{
 							model: OrderItemModel,
 							as:'itens',
 							attributes:[
-								'idproduto', 
+								'idproduto',
+								'estado',
 								[sequelize.fn('SUM', sequelize.col('quantidade')), 'sub_quantidade']
 							],
 							include:{
 								model: ProductModel,
 								as: "produto"
-							}
+							},
+						   where:{"estado":"NORMAL"}
 					},
 					group: [ 'itens.idproduto'],
 					where:{[Op.and]:filtros}
